@@ -1,17 +1,53 @@
-use crate::notion_type::*;
+use crate::types::RebaseDaliy;
 use serde_json::{json, Value};
 
-pub fn display(notion_page: &NotionPage) -> Vec<Value> {
+pub fn display(notion_page: &RebaseDaliy) -> Vec<Value> {
     let mut properties = Vec::new();
 
-    for message in notion_page.properties.iter() {
+    for message in notion_page.data.iter() {
         let title = json!({
             "type": "title",
             "title": [
                 {
                     "type": "text",
                     "text": {
-                        "content": message.title
+                        "content": message.attributes.title
+                    }
+                }
+            ]
+        });
+
+        let author = json!({
+            "type": "rich_text",
+            "rich_text": [
+                {
+                    "type": "text",
+                    "text": {
+                        "content": message.attributes.author
+                    }
+                }
+            ]
+        });
+
+        let episode = json!({
+            "type": "rich_text",
+            "rich_text": [
+                {
+                    "type": "text",
+                    "text": {
+                        "content": message.attributes.episode
+                    }
+                }
+            ]
+        });
+
+        let time = json!({
+            "type": "rich_text",
+            "rich_text": [
+                {
+                    "type": "text",
+                    "text": {
+                        "content": message.attributes.time
                     }
                 }
             ]
@@ -23,7 +59,7 @@ pub fn display(notion_page: &NotionPage) -> Vec<Value> {
                 {
                     "type": "text",
                     "text": {
-                        "content": message.link
+                        "content": message.attributes.url
                     }
                 }
             ]
@@ -35,7 +71,7 @@ pub fn display(notion_page: &NotionPage) -> Vec<Value> {
                 {
                     "type": "text",
                     "text": {
-                        "content": message.paragraphs
+                        "content": message.attributes.introduce
                     }
                 }
             ]
@@ -43,8 +79,11 @@ pub fn display(notion_page: &NotionPage) -> Vec<Value> {
 
         let message_json = json!({
             "Title": title,
+            "Author": author,
+            "Intro": intro,
+            "Episode": episode,
+            "Time": time,
             "Link": link,
-            "Intro": intro
         });
         properties.push(message_json)
     }
