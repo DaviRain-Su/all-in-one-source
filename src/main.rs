@@ -6,7 +6,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::sync::{Arc, Mutex};
 
-use notion_type::*;
+use logic::process_task_range;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -17,37 +17,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // file.write_all("[".as_bytes()).unwrap();
     file1.lock().unwrap().write_all("[".as_bytes()).unwrap();
 
-    let mut tasks = vec![];
+    let cpu_count = num_cpus::get();
+    let task_count = 3431; // Total tasks to be processed
+    let tasks_per_thread = task_count / cpu_count;
 
+    let mut tasks = vec![];
     let numbers = Arc::new(Mutex::new(vec![]));
 
-    for id in 0..=3430 {
-        // for id in 3430u64..=3430 {
+    for i in 0..cpu_count {
+        let start = i * tasks_per_thread;
+        let end = if i == cpu_count - 1 {
+            task_count - 1
+        } else {
+            (i + 1) * tasks_per_thread - 1
+        };
+
         let file = file1.clone();
         let numbers = numbers.clone();
-        let task = tokio::spawn(async move {
-            let html = reqwest::get(format!("http://old.rebase.network/posts/{}", id)).await;
-            if let Ok(html) = html {
-                if let Ok(ret) = html.text().await {
-                    numbers.lock().unwrap().push(id);
-                    let title = format!("Web3极客日报-{}", id);
-                    let ret = parse_pages(title, &ret);
-                    if !ret.properties.is_empty() {
-                        let json_v = display_notion::display(&ret);
-                        for msg in json_v.iter() {
-                            println!("{}", serde_json::to_string_pretty(&msg).unwrap());
-                            let json_data = msg.to_string();
-                            // println!("{}", json_data);
 
-                            file.lock()
-                                .unwrap()
-                                .write_all(json_data.to_string().as_bytes())
-                                .unwrap();
-                            file.lock().unwrap().write_all(",".as_bytes()).unwrap();
-                        }
-                    }
-                }
-            };
+        let task = tokio::spawn(async move {
+            process_task_range(start, end, file, numbers).await;
         });
 
         tasks.push(task);

@@ -5,10 +5,10 @@ use std::io::prelude::*;
 use std::sync::{Arc, Mutex};
 
 pub async fn process_task_range(
-    start: u64,
-    end: u64,
+    start: usize,
+    end: usize,
     file: Arc<Mutex<File>>,
-    numbers: Arc<Mutex<Vec<u64>>>,
+    numbers: Arc<Mutex<Vec<usize>>>,
 ) {
     for id in start..=end {
         let html = reqwest::get(format!("http://old.rebase.network/posts/{}", id)).await;
