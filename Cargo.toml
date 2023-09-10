@@ -17,3 +17,4 @@ tokio = { version = "1.32.0", features = ["full"] }
 html5ever = "0.25"
 select = "0.6"
 retry = "2.0.0"
+notion = { version = "0.5.1", git = "https://github.com/DaviRain-Su/notion.git", branch = "main" }

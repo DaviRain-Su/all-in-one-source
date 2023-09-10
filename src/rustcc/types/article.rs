@@ -21,7 +21,7 @@ impl Article {
         let response = reqwest::get(article_url).await?;
         let body = response.text().await?;
         // dbg!(body.clone());
-        println!("body : {}", body);
+        // println!("body : {}", body);
 
         let mut messages = Messages::new();
 
@@ -76,6 +76,7 @@ impl Article {
                     message.title = title;
                 } else if value.contains('p') {
                     let content = title_and_content.text().collect::<String>();
+                    let content = content.replace('\n', "");
                     if content.contains("From 日报小组")
                         || content.contains("社区学习交流")
                         || content.contains("Telgram Channel")
@@ -94,8 +95,9 @@ impl Article {
 
                     if let Some(element) = document.select(&selector).next() {
                         let link_content = element.value().attr("href").unwrap();
-                        if !content.contains(link_content) {
-                            message.contents.push(link_content.into());
+                        let link_content = link_content.replace('\n', "");
+                        if !content.contains(&link_content) {
+                            message.contents.push(link_content);
                         } else {
                             message.link = link_content.to_string();
                         }

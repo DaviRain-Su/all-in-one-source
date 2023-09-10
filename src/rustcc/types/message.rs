@@ -1,6 +1,5 @@
-use std::fmt::Display;
-
 use serde::{Deserialize, Serialize};
+use std::fmt::Display;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub struct Message {
@@ -14,9 +13,9 @@ pub struct Message {
 impl Display for Message {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for content in self.contents.iter() {
-            writeln!(f, "{}", content)?;
+            write!(f, "{}", content)?;
         }
-        writeln!(f,)
+        Ok(())
     }
 }
 
