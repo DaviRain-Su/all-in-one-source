@@ -1,3 +1,4 @@
+pub mod notion;
 pub mod rebase;
 pub mod rustcc;
 
@@ -7,13 +8,14 @@ use std::sync::{Arc, Mutex};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    // load_single().await?;
-    crate::rustcc::logic::wrap_run_signle().await?;
+    load_single().await?;
+    // crate::rustcc::logic::wrap_run_signle().await?;
+    // load_all().await?;
     Ok(())
 }
 
 async fn load_all() -> anyhow::Result<()> {
-    let file = File::create("target/output.json").unwrap();
+    let file = File::create("target/rebase_all.json").unwrap();
     let file1 = Arc::new(Mutex::new(file));
 
     file1.lock().unwrap().write_all("[".as_bytes())?;
@@ -57,10 +59,12 @@ async fn load_single() -> anyhow::Result<()> {
 
     file1.lock().unwrap().write_all("[".as_bytes()).unwrap();
 
+    let before_totall_count = 4143;
+
     let task_count = rebase::api::total_count().await?;
 
-    let start = task_count;
-    let end = task_count + 1;
+    let start = before_totall_count + 1;
+    let end = task_count;
 
     rebase::logic::process_task_range(start, end, file1.clone()).await;
 

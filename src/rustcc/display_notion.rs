@@ -53,13 +53,18 @@ pub fn convert_to_json_value(messages: &Messages) -> Vec<Value> {
             ]
         });
 
+        let content = if message.to_string().len() > 2000 {
+            message.to_string()[0..2000].to_string()
+        } else {
+            message.to_string()
+        };
         let intro = json!({
             "type": "rich_text",
             "rich_text": [
                 {
                     "type": "text",
                     "text": {
-                        "content": message.to_string()
+                        "content": content
                     }
                 }
             ]
