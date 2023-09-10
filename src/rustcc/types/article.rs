@@ -1,4 +1,6 @@
 use super::message::{Message, Messages};
+// use retry::delay::Fixed;
+// use retry::OperationResult;
 use scraper::{Html, Selector};
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
@@ -19,9 +21,34 @@ impl Article {
         let response = reqwest::get(article_url).await?;
         let body = response.text().await?;
         // dbg!(body.clone());
-        // println!("body : {}", body);
+        println!("body : {}", body);
 
         let mut messages = Messages::new();
+
+        let document0 = Html::parse_document(&body);
+        let selector0 = Selector::parse("p.vice-title").unwrap();
+        let content0 = document0
+            .select(&selector0)
+            .next()
+            .unwrap()
+            .text()
+            .collect::<String>();
+
+        let content1 = content0
+            .split('\n')
+            .collect::<Vec<&str>>()
+            .into_iter()
+            .map(|item| item.trim())
+            .filter(|item| !item.is_empty())
+            .collect::<Vec<&str>>();
+
+        let author = content1[0].to_string();
+
+        let time = content1[1]
+            .to_string()
+            .trim_start_matches("发表于")
+            .trim()
+            .to_string();
 
         let document = Html::parse_document(&body);
         let selector = Selector::parse("div.detail-body").unwrap();
@@ -31,13 +58,21 @@ impl Article {
 
             let title_and_contents = element.select(&title_and_contents_selector);
 
-            let mut message = Message::default();
+            let mut message = Message {
+                author: author.clone(),
+                time: time.clone(),
+                ..Message::default()
+            };
             for title_and_content in title_and_contents {
                 let value = title_and_content.value().name();
                 if value.contains("h3") || value.contains("h2") || value.contains("h1") {
                     let title = title_and_content.text().collect::<String>();
                     messages.push(message);
-                    message = Message::default();
+                    message = Message {
+                        author: author.clone(),
+                        time: time.clone(),
+                        ..Message::default()
+                    };
                     message.title = title;
                 } else if value.contains('p') {
                     let content = title_and_content.text().collect::<String>();
@@ -143,6 +178,8 @@ async fn test_article_content2() {
     };
     let messages = article.content().await.unwrap();
     for msg in messages.messages {
+        println!("Author: {}", msg.author);
+        println!("time: {}", msg.time);
         println!("Title: {}", msg.title);
         println!("{}", msg);
     }

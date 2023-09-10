@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub struct Message {
+    pub author: String,
+    pub time: String,
     pub title: String,
     pub link: String,
     pub contents: Vec<String>,
@@ -19,8 +21,16 @@ impl Display for Message {
 }
 
 impl Message {
-    pub fn new(title: String, link: String, contents: Vec<String>) -> Self {
+    pub fn new(
+        author: String,
+        time: String,
+        title: String,
+        link: String,
+        contents: Vec<String>,
+    ) -> Self {
         Self {
+            author,
+            time,
             title,
             link,
             contents,
