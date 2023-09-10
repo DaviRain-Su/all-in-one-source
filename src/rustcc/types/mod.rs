@@ -1,12 +1,19 @@
 use scraper::{Html, Selector};
+pub mod article;
+pub mod section_link;
 
-pub async fn get_section() -> anyhow::Result<()> {
+use section_link::{SectionLink, SectionLinkList};
+
+pub async fn get_section_links() -> anyhow::Result<SectionLinkList> {
     let response =
         reqwest::get("https://rustcc.cn/section?id=f4703117-7e6b-4caf-aa22-a3ad3db6898f").await?;
 
     let html = response.text().await?;
 
-    println!("body: {}", html);
+    let mut secion_links = SectionLinkList {
+        section_id: "f4703117-7e6b-4caf-aa22-a3ad3db6898f".to_string(),
+        section_link_list: Vec::new(),
+    };
 
     // 使用scraper解析HTML
     let document = Html::parse_document(&html);
@@ -17,29 +24,24 @@ pub async fn get_section() -> anyhow::Result<()> {
     // 找到所有的<a>标签并打印链接和文本内容
     for link in document.select(&selector) {
         let href = link.value().attr("href").unwrap_or("");
-        let text = link.text().collect::<String>();
-        if !text.contains("泰晓科技")
-            || !text.contains("Ruby China")
-            || !text.contains("电鸭远程社区")
-            || !text.contains("IPFS中文社区")
-            || !text.contains("鸣谢")
-            || !text.contains("迅达云")
-            || !text.contains("赛贝")
-            || !text.contains("LongHash")
-            || !text.contains("Forustm")
-            || !text.contains("Rusoda")
-            || !text.contains("Sapper")
-            || !text.contains("ICP备")
-        {
-            println!("链接：{}", href);
-            println!("文本内容：{}", text);
+        let _text = link.text().collect::<String>();
+        if href.contains("/section") {
+            let id = href
+                .trim_start_matches(
+                    "/section?id=f4703117-7e6b-4caf-aa22-a3ad3db6898f&current_page=",
+                )
+                .to_string()
+                .parse::<usize>()?;
+            let section_link = SectionLink { id };
+            secion_links.push(section_link);
         }
     }
 
-    Ok(())
+    Ok(secion_links)
 }
 
 #[tokio::test]
-async fn test_get_section() {
-    let r = get_section().await.unwrap();
+async fn test_get_section_links() {
+    let r = get_section_links().await.unwrap();
+    println!("{}", r);
 }
