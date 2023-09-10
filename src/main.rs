@@ -12,7 +12,7 @@ async fn main() -> anyhow::Result<()> {
 }
 
 async fn load_all() -> anyhow::Result<()> {
-    let file = File::create("output.json").unwrap();
+    let file = File::create("target/output.json").unwrap();
     let file1 = Arc::new(Mutex::new(file));
 
     file1.lock().unwrap().write_all("[".as_bytes())?;
@@ -51,7 +51,7 @@ async fn load_all() -> anyhow::Result<()> {
 }
 
 async fn load_single() -> anyhow::Result<()> {
-    let file = File::create("latest.json").unwrap();
+    let file = File::create("target/latest.json").unwrap();
     let file1 = Arc::new(Mutex::new(file));
 
     file1.lock().unwrap().write_all("[".as_bytes()).unwrap();

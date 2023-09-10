@@ -1,5 +1,7 @@
-# Rebase Daily parse
+# Source Parse
 
-## data
+## Rebase Daily
 
-- https://db.rebase.network/api/v1/geekdailies?pagination[page]=1&pagination[pageSize]=2
+https://db.rebase.network/api/v1/geekdailies?pagination[page]={pageIndex}&pagination[pageSize]=1
+
+## Rustcc
