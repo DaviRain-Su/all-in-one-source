@@ -9,7 +9,7 @@ pub async fn process_task_range(start: usize, end: usize, file: Arc<Mutex<File>>
         if let Ok(html) = html {
             if let Ok(body) = html.text().await {
                 if let Ok(rebase_daily) = serde_json::from_str(&body) {
-                    let json_v = display_notion::display(&rebase_daily);
+                    let json_v = display_notion::convert_to_json_value(&rebase_daily);
                     for msg in json_v.iter() {
                         println!("{}", serde_json::to_string_pretty(&msg).unwrap());
                         let json_data = msg.to_string();

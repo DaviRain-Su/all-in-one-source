@@ -11,13 +11,19 @@ use std::sync::{Arc, Mutex};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    load_single().await?;
+    Ok(())
+}
+
+async fn load_all() -> anyhow::Result<()> {
     let file = File::create("output.json").unwrap();
     let file1 = Arc::new(Mutex::new(file));
 
-    file1.lock().unwrap().write_all("[".as_bytes()).unwrap();
+    file1.lock().unwrap().write_all("[".as_bytes())?;
 
     let cpu_count = num_cpus::get();
     let task_count = api::total_count().await?; // Total tasks to be processed
+                                                // let task_count = 1000;
     let tasks_per_thread = task_count / cpu_count;
 
     let mut tasks = vec![];
@@ -42,6 +48,24 @@ async fn main() -> anyhow::Result<()> {
     for task in tasks {
         task.await?;
     }
+
+    file1.lock().unwrap().write_all("]".as_bytes())?;
+
+    Ok(())
+}
+
+async fn load_single() -> anyhow::Result<()> {
+    let file = File::create("latest.json").unwrap();
+    let file1 = Arc::new(Mutex::new(file));
+
+    file1.lock().unwrap().write_all("[".as_bytes()).unwrap();
+
+    let task_count = api::total_count().await?;
+
+    let start = task_count;
+    let end = task_count + 1;
+
+    process_task_range(start, end, file1.clone()).await;
 
     file1.lock().unwrap().write_all("]".as_bytes()).unwrap();
 

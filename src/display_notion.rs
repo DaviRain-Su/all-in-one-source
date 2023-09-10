@@ -1,7 +1,7 @@
 use crate::types::RebaseDaliy;
 use serde_json::{json, Value};
 
-pub fn display(notion_page: &RebaseDaliy) -> Vec<Value> {
+pub fn convert_to_json_value(notion_page: &RebaseDaliy) -> Vec<Value> {
     let mut properties = Vec::new();
 
     for message in notion_page.data.iter() {
