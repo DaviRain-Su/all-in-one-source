@@ -1,9 +1,7 @@
-use scraper::{Html, Selector};
-use std::fmt::Display;
-
-use serde::{Deserialize, Serialize};
-
 use super::article::{Article, ArticleList};
+use scraper::{Html, Selector};
+use serde::{Deserialize, Serialize};
+use std::fmt::Display;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SectionLink {

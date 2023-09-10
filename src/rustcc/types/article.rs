@@ -1,3 +1,4 @@
+use super::message::{Message, Messages};
 use scraper::{Html, Selector};
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
@@ -13,27 +14,78 @@ impl Article {
         &self.title
     }
 
-    pub async fn content(&self) -> anyhow::Result<()> {
+    pub async fn content(&self) -> anyhow::Result<Messages> {
         let article_url = self.to_string();
         let response = reqwest::get(article_url).await?;
         let body = response.text().await?;
-        println!("Body: {}", body);
+        // dbg!(body.clone());
+        // println!("body : {}", body);
+
+        let mut messages = Messages::new();
+
         let document = Html::parse_document(&body);
         let selector = Selector::parse("div.detail-body").unwrap();
 
         if let Some(element) = document.select(&selector).next() {
-            let title_and_contents_selector = Selector::parse("h3,p").unwrap();
+            let title_and_contents_selector = Selector::parse("h1,h2,h3,p,ul,a").unwrap();
 
             let title_and_contents = element.select(&title_and_contents_selector);
 
+            let mut message = Message::default();
             for title_and_content in title_and_contents {
-                // let title = title_and_content;
-                let content = title_and_content.text().collect::<String>();
-                println!("Content : {}", content);
+                let value = title_and_content.value().name();
+                if value.contains("h3") || value.contains("h2") || value.contains("h1") {
+                    let title = title_and_content.text().collect::<String>();
+                    messages.push(message);
+                    message = Message::default();
+                    message.title = title;
+                } else if value.contains('p') {
+                    let content = title_and_content.text().collect::<String>();
+                    if content.contains("From 日报小组")
+                        || content.contains("社区学习交流")
+                        || content.contains("Telgram Channel")
+                        || content.contains("阿里云语雀订阅")
+                        || content.contains("Steemit")
+                        || content.contains("日报订阅")
+                        || content.contains("独立日报订阅")
+                    {
+                    } else {
+                        message.contents.push(content.clone());
+                    }
+
+                    let raw_html = title_and_content.inner_html();
+                    let document = Html::parse_document(&raw_html);
+                    let selector = Selector::parse("a").unwrap();
+
+                    if let Some(element) = document.select(&selector).next() {
+                        let link_content = element.value().attr("href").unwrap();
+                        if !content.contains(link_content) {
+                            message.contents.push(link_content.into());
+                        } else {
+                            message.link = link_content.to_string();
+                        }
+                    }
+                } else if value.contains("ul") {
+                    let content = title_and_content.text().collect::<String>();
+
+                    if content.contains("Rust.cc 论坛") || content.contains("微信公众号") {
+                    } else {
+                        message.contents.push(content);
+                    }
+                }
             }
+            messages.push(message);
         }
 
-        Ok(())
+        let msg = Messages {
+            messages: messages
+                .messages
+                .into_iter()
+                .filter(|item| !item.is_empty())
+                .collect(),
+        };
+
+        Ok(msg)
     }
 }
 
@@ -61,5 +113,72 @@ async fn test_article_content() {
         link: "1ad7d23c-2392-4cce-9dc7-4bebcb3d51a5".to_string(),
         title: "【Rust日报】2023-09-09 Arroyo v0.5，高效地将流式数据传输到 S3".to_string(),
     };
-    article.content().await.unwrap();
+    let messages = article.content().await.unwrap();
+    for msg in messages.messages {
+        println!("Title: {}", msg.title);
+        println!("{}", msg);
+    }
+}
+
+#[tokio::test]
+async fn test_article_content1() {
+    let article = Article {
+        link: "11c0c645-a5bf-4a73-9e1c-314450e16ee7".to_string(),
+        title: "【Rust日报】2023-08-11 Bevy 三周年🎂！".to_string(),
+    };
+    let messages = article.content().await.unwrap();
+    for msg in messages.messages {
+        println!("Title: {}", msg.title);
+        println!("{}", msg);
+    }
+}
+
+#[tokio::test]
+async fn test_article_content2() {
+    let article = Article {
+        link: "d3109d9a-496f-4051-9f44-16e095d1f74f".to_string(),
+        title: "【Rust日报】2023-09-05 cargo-audit 0.18 版本 - 性能、兼容性和安全性改进
+"
+        .to_string(),
+    };
+    let messages = article.content().await.unwrap();
+    for msg in messages.messages {
+        println!("Title: {}", msg.title);
+        println!("{}", msg);
+    }
+}
+
+#[tokio::test]
+async fn test_multi_article_content() {
+    use super::SectionLink;
+
+    let section_link = SectionLink { id: 1 };
+    let article_list = section_link.get_articles().await.unwrap();
+    // println!("{:#?}", article_list)
+
+    for article in article_list.article_list {
+        let messages = article.content().await.unwrap();
+        for msg in messages.messages {
+            println!("Title: {}", msg.title);
+            println!("{}", msg);
+        }
+    }
+}
+
+#[tokio::test]
+async fn test_multi_article_content_all() {
+    use super::SectionLink;
+
+    for idx in 1..=66 {
+        let section_link = SectionLink { id: idx };
+        let article_list = section_link.get_articles().await.unwrap();
+
+        for article in article_list.article_list {
+            let messages = article.content().await.unwrap();
+            for msg in messages.messages {
+                println!("Title: {}", msg.title);
+                println!("{}", msg);
+            }
+        }
+    }
 }
