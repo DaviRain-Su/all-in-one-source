@@ -1,10 +1,6 @@
-pub mod api;
-pub mod display_notion;
-pub mod hellath_check;
-pub mod logic;
-pub mod types;
+pub mod rebase;
+pub mod rustcc;
 
-use logic::process_task_range;
 use std::fs::File;
 use std::io::prelude::*;
 use std::sync::{Arc, Mutex};
@@ -22,8 +18,8 @@ async fn load_all() -> anyhow::Result<()> {
     file1.lock().unwrap().write_all("[".as_bytes())?;
 
     let cpu_count = num_cpus::get();
-    let task_count = api::total_count().await?; // Total tasks to be processed
-                                                // let task_count = 1000;
+    let task_count = rebase::api::total_count().await?; // Total tasks to be processed
+                                                        // let task_count = 1000;
     let tasks_per_thread = task_count / cpu_count;
 
     let mut tasks = vec![];
@@ -39,7 +35,7 @@ async fn load_all() -> anyhow::Result<()> {
         let file = file1.clone();
 
         let task = tokio::spawn(async move {
-            process_task_range(start, end, file).await;
+            rebase::logic::process_task_range(start, end, file).await;
         });
 
         tasks.push(task);
@@ -60,12 +56,12 @@ async fn load_single() -> anyhow::Result<()> {
 
     file1.lock().unwrap().write_all("[".as_bytes()).unwrap();
 
-    let task_count = api::total_count().await?;
+    let task_count = rebase::api::total_count().await?;
 
     let start = task_count;
     let end = task_count + 1;
 
-    process_task_range(start, end, file1.clone()).await;
+    rebase::logic::process_task_range(start, end, file1.clone()).await;
 
     file1.lock().unwrap().write_all("]".as_bytes()).unwrap();
 

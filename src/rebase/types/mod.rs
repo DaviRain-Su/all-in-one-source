@@ -1,6 +1,3 @@
-// use reqwest::header::{HeaderMap, HeaderValue};
-// use reqwest::Client;
-// use scraper::{Html, Selector};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]

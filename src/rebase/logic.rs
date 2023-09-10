@@ -1,4 +1,4 @@
-use crate::display_notion;
+use super::display_notion;
 use std::fs::File;
 use std::io::prelude::*;
 use std::sync::{Arc, Mutex};
