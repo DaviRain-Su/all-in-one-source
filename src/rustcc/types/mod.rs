@@ -1,5 +1,6 @@
 use scraper::{Html, Selector};
 pub mod article;
+pub mod message;
 pub mod section_link;
 
 use section_link::{SectionLink, SectionLinkList};
@@ -25,7 +26,7 @@ pub async fn get_section_links() -> anyhow::Result<SectionLinkList> {
     for link in document.select(&selector) {
         let href = link.value().attr("href").unwrap_or("");
         let _text = link.text().collect::<String>();
-        if href.contains("/section") {
+        if href.starts_with("/section") {
             let id = href
                 .trim_start_matches(
                     "/section?id=f4703117-7e6b-4caf-aa22-a3ad3db6898f&current_page=",

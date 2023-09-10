@@ -41,7 +41,7 @@ impl SectionLink {
         for link in document.select(&selector) {
             let href = link.value().attr("href").unwrap_or("");
             let text = link.text().collect::<String>();
-            if href.contains("/article") {
+            if href.starts_with("/article") {
                 let link = href.trim_start_matches("/article?id=").to_string();
                 let section_link = Article { link, title: text };
                 aticle_links.push(section_link);
