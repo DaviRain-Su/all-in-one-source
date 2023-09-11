@@ -8,8 +8,8 @@ use std::sync::{Arc, Mutex};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    load_single().await?;
-    // crate::rustcc::logic::wrap_run_signle().await?;
+    // load_single().await?;
+    crate::rustcc::logic::wrap_run_signle().await?;
     // load_all().await?;
     Ok(())
 }

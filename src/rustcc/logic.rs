@@ -86,9 +86,12 @@ async fn load_single(idx: usize) -> anyhow::Result<()> {
 }
 
 pub async fn wrap_run_signle() -> anyhow::Result<()> {
-    for idx in 1..=66 {
+    for idx in 61..=66 {
         if load_single(idx).await.is_ok() {
-            println!("successful!");
+            println!(
+                "---------------------------section {} successful load!----------------",
+                idx
+            );
         }
     }
 
@@ -97,6 +100,6 @@ pub async fn wrap_run_signle() -> anyhow::Result<()> {
 
 #[tokio::test]
 async fn test_local_single() {
-    let r = load_single(1).await;
+    let r = load_single(5).await;
     println!("r = {:?}", r);
 }

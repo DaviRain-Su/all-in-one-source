@@ -54,7 +54,7 @@ pub fn convert_to_json_value(messages: &Messages) -> Vec<Value> {
         });
 
         let content = if message.to_string().len() > 2000 {
-            message.to_string()[0..2000].to_string()
+            message.to_string().chars().take(1990).collect::<String>()
         } else {
             message.to_string()
         };
