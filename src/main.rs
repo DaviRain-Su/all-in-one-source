@@ -1,4 +1,3 @@
-pub mod notion;
 pub mod rebase;
 pub mod rustcc;
 
